@@ -20,10 +20,10 @@ void* cryptoexecutproofsettle_cons(void* arg) {
 
     while (true) {
 
-        // --- Enter proof queue critical section ---
+        //Enter proof queue critical section 
         pthread_mutex_lock(&shared->proof_mutex);
 
-        // --- Wait if proof queue is empty ---
+        // Wait if proof queue is empty 
         while (shared->proofQueue.empty()) {
             // Check if all proofs have been consumed
             if (shared->proofs_consumed >= shared->production_limit) {
@@ -35,32 +35,32 @@ void* cryptoexecutproofsettle_cons(void* arg) {
                               &shared->proof_mutex);
         }
 
-        // --- Remove execution proof from queue (FIFO) ---
+        //  Remove execution proof from queue (FIFO)
         ExecutionProof proof = shared->proofQueue.front();
         shared->proofQueue.pop();
         shared->proofs_in_queue--;
         shared->proofs_consumed++;
 
-        // --- Build proof string e.g. "EthExecSPOT" ---
+        //  Build proof string e.g. "EthExecSPOT" 
         std::string proofStr = std::string(order_consumerNames[proof.producer])
                              + std::string(order_producerNames[proof.type]);
 
-        // --- Log INSIDE critical section per assignment requirement ---
+        // Log INSIDE critical section per assignment requirement 
         log_removed_execution(proofStr.c_str(),
                               (unsigned int)shared->proofs_in_queue,
                               (unsigned int)shared->proofs_consumed);
 
-        // --- Signal consumers that proof queue has space ---
+        // Signal consumers that proof queue has space 
         pthread_cond_signal(&shared->not_full_proofs);
 
-        // --- Exit proof queue critical section ---
+        //  Exit proof queue critical section 
         pthread_mutex_unlock(&shared->proof_mutex);
 
-        // --- Simulate settlement OUTSIDE critical section ---
+        // Simulate settlement OUTSIDE critical section 
         if (args->sleep_ms > 0)
             usleep(args->sleep_ms * 1000);
 
-        // --- Check if all proofs settled, signal main thread barrier ---
+        //  Check if all proofs settled, signal main thread barrier 
         pthread_mutex_lock(&shared->proof_mutex);
         if (shared->proofs_consumed >= shared->production_limit &&
             shared->proofQueue.empty()) {

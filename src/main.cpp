@@ -19,7 +19,7 @@
  */
 int main(int argc, char* argv[]) {
 
-    // ----- Default argument values -----
+    // Default argument values
     int n = 120;   // total orders to produce
     int s = 0;     // SpotLimit sleep ms
     int w = 0;     // MarketSwap sleep ms
@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
     int l = 0;     // SolExec sleep ms
     int t = 0;     // Settler sleep ms
 
-    // ----- Parse command line arguments -----
+    //  Parse command line arguments 
     int option;
     while ((option = getopt(argc, argv, "n:s:w:e:l:t:")) != -1) {
         switch (option) {
@@ -44,11 +44,11 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // ----- Initialize shared data -----
+    //  Initialize shared data 
     SharedData shared;
     initSharedData(&shared, n);
 
-    // ----- Set up producer args -----
+    // Set up producer args 
     ProducerArgs spotArgs;
     spotArgs.shared   = &shared;
     spotArgs.type     = SpotLimit;
@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
     swapArgs.type     = MarketSwap;
     swapArgs.sleep_ms = w;
 
-    // ----- Set up consumer args -----
+    //  Set up consumer args 
     ConsumerArgs ethArgs;
     ethArgs.shared   = &shared;
     ethArgs.chain    = EthExec;
@@ -70,12 +70,12 @@ int main(int argc, char* argv[]) {
     solArgs.chain    = SolExec;
     solArgs.sleep_ms = l;
 
-    // ----- Set up settler args -----
+    //  Set up settler args 
     SettlerArgs settlerArgs;
     settlerArgs.shared   = &shared;
     settlerArgs.sleep_ms = t;
 
-    // ----- Create all threads at the same time -----
+    //  Create all threads at the same time 
     pthread_t spotThread, swapThread;
     pthread_t ethThread,  solThread;
     pthread_t settlerThread;
@@ -86,10 +86,10 @@ int main(int argc, char* argv[]) {
     pthread_create(&solThread,     NULL, cryptoSLorMS_cons,           &solArgs);
     pthread_create(&settlerThread, NULL, cryptoexecutproofsettle_cons, &settlerArgs);
 
-    // ----- Main thread waits for settler to finish -----
+    // Main thread waits for settler to finish 
     sem_wait(&shared.barrier);
 
-    // ----- Print final order history report -----
+    //  Print final order history report 
     unsigned int produced[OrderTypeN];
     produced[SpotLimit]  = shared.spot_produced;
     produced[MarketSwap] = shared.market_produced;

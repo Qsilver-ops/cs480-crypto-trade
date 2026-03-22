@@ -1,2 +1,3 @@
+# tells github to ignore these files for final upload 
 *.o
 tradepipeline

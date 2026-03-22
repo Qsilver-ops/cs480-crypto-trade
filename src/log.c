@@ -20,7 +20,7 @@ using namespace std;
 
 sem_t sem_print;  // Semaphore for ensuring mutex printing, 
                   // I know this is bad practice in terms of using Global, which is not ideal.
-                  // Do NOT use the Global variables in your code! 
+                  // Do NOT use the Global variables in your code 
 
 pthread_once_t init_once = PTHREAD_ONCE_INIT;  // Ensures one-time initialization
 
@@ -133,7 +133,7 @@ void log_added_order(OrderAdded orderAdded) {
   /* total produced over how long */
   printf(" = %d in %.3f s.\n", total, elapsed_s());
 
-  /* This is not really needed, but will be helpful for making sure that you
+  /* making sure that we are able to
    * see output prior to a segmentation violation.  This is not usually a
    * good practice as we want to avoid ending the CPU burst prematurely which
    * this will do, but it is a helpful technique.
@@ -186,8 +186,7 @@ void log_removed_order(OrderRemoved orderRemoved) {
   /* total consumed over how long */
   printf(" = %d consumed in %.3f s.\n", total, elapsed_s());
 
-  /* This is not really needed, but will be helpful for making sure that you
-   * see output prior to a segmentation violation.  This is not usually a
+  /* so that we can see output prior to a segmentation violation.  This is not usually a
    * good practice as we want to avoid ending the CPU burst prematurely which
    * this will do, but it is a helpful technique.
    */

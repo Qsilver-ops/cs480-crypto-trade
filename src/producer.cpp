@@ -20,21 +20,21 @@ void* cryptoSLorMS_prod(void* arg) {
 
     while (true) {
 
-        // --- Simulate production OUTSIDE critical section ---
+        //  Simulate production OUTSIDE critical section 
         if (args->sleep_ms > 0)
             usleep(args->sleep_ms * 1000);
 
-        // --- Enter critical section ---
+        //  Enter critical section 
         pthread_mutex_lock(&shared->reserved_mutex);
 
-        // --- Check if production limit already reached ---
+        // Check if production limit already reached 
         int total_produced = shared->spot_produced + shared->market_produced;
         if (total_produced >= shared->production_limit) {
             pthread_mutex_unlock(&shared->reserved_mutex);
             break;
         }
 
-        // --- Wait if reserved queue is full (max 25) ---
+        //  Wait if reserved queue is full (max 25) 
         while ((int)shared->reservedQueue.size() >= MAX_RESERVED_ORDERS) {
             pthread_cond_wait(&shared->not_full_reserved,
                               &shared->reserved_mutex);
@@ -46,7 +46,7 @@ void* cryptoSLorMS_prod(void* arg) {
             }
         }
 
-        // --- If MarketSwap: also wait if SWAP limit reached (max 10) ---
+        //  If MarketSwap: also wait if SWAP limit reached (max 10) 
         if (myType == MarketSwap) {
             while (shared->market_in_queue >= MAX_MARKET_SWAP) {
                 pthread_cond_wait(&shared->not_full_market_swap,
@@ -60,12 +60,12 @@ void* cryptoSLorMS_prod(void* arg) {
             }
         }
 
-        // --- Add order to queue ---
+        //  Add order to queue 
         Order newOrder;
         newOrder.type = myType;
         shared->reservedQueue.push(newOrder);
 
-        // --- Update counters ---
+        //  Update counters 
         if (myType == SpotLimit) {
             shared->spot_produced++;
             shared->spot_in_queue++;
@@ -74,7 +74,7 @@ void* cryptoSLorMS_prod(void* arg) {
             shared->market_in_queue++;
         }
 
-        // --- Build OrderAdded for logging (INSIDE critical section) ---
+        // Build OrderAdded for logging (INSIDE critical section) 
         unsigned int inQueue[OrderTypeN];
         inQueue[SpotLimit]  = (unsigned int)shared->spot_in_queue;
         inQueue[MarketSwap] = (unsigned int)shared->market_in_queue;

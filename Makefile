@@ -6,7 +6,7 @@ CC = g++
 # -Wall       show warning messages
 # -g3         include information for symbolic debugger gdb
 # -I./include tell compiler where to find header files
-CCFLAGS = -std=c++11 -Wall -g3 -c -I./include
+CCFLAGS = -std=c++11 -Wall -g3 -pthread -c
 
 # Object files
 OBJS = main.o shared.o producer.o consumer.o settler.o log.o
@@ -18,23 +18,23 @@ PROGRAM = tradepipeline
 $(PROGRAM) : $(OBJS)
 	$(CC) -pthread -o $(PROGRAM) $(OBJS)
 
-main.o : src/main.cpp
-	$(CC) $(CCFLAGS) src/main.cpp
+main.o : main.cpp
+	$(CC) $(CCFLAGS) main.cpp
 
-shared.o : src/shared.cpp include/shared.h
-	$(CC) $(CCFLAGS) src/shared.cpp
+shared.o : shared.cpp shared.h
+	$(CC) $(CCFLAGS) shared.cpp
 
-producer.o : src/producer.cpp include/producer.h
-	$(CC) $(CCFLAGS) src/producer.cpp
+producer.o : producer.cpp producer.h
+	$(CC) $(CCFLAGS) producer.cpp
 
-consumer.o : src/consumer.cpp include/consumer.h
-	$(CC) $(CCFLAGS) src/consumer.cpp
+consumer.o : consumer.cpp consumer.h
+	$(CC) $(CCFLAGS) consumer.cpp
 
-settler.o : src/settler.cpp include/settler.h
-	$(CC) $(CCFLAGS) src/settler.cpp
+settler.o : settler.cpp settler.h
+	$(CC) $(CCFLAGS) settler.cpp
 
-log.o : src/log.c include/log.h
-	$(CC) $(CCFLAGS) src/log.c
+log.o : log.cpp log.h
+	$(CC) $(CCFLAGS) log.cpp
 
 clean :
 	rm -f $(OBJS) *~ $(PROGRAM)

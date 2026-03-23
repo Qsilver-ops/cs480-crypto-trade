@@ -88,6 +88,11 @@ int main(int argc, char* argv[]) {
 
     // ----- Main thread waits for settler to finish -----
     sem_wait(&shared.barrier);
+    pthread_join(spotThread, NULL);
+    pthread_join(swapThread, NULL);
+    pthread_join(ethThread, NULL);
+    pthread_join(solThread, NULL);
+    pthread_join(settlerThread, NULL);
 
     // ----- Print final order history report -----
     unsigned int produced[OrderTypeN];

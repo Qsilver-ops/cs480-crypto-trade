@@ -20,7 +20,7 @@ void* cryptoSLorMS_prod(void* arg) {
 
     while (true) {
 
-        //  Simulate production OUTSIDE critical section 
+        // Simulate production OUTSIDE critical section 
         if (args->sleep_ms > 0)
             usleep(args->sleep_ms * 1000);
 
@@ -34,10 +34,12 @@ void* cryptoSLorMS_prod(void* arg) {
             break;
         }
 
-        //  Wait if reserved queue is full (max 25) 
-        while ((int)shared->reservedQueue.size() >= MAX_RESERVED_ORDERS) {
+        //  Wait if reserved queue is full, or if MarketSwap queue limit reached 
+        while ((shared->spot_in_queue + shared->market_in_queue) >= MAX_RESERVED_ORDERS ||
+            (myType == MarketSwap && shared->market_in_queue >= MAX_MARKET_SWAP)) {
             pthread_cond_wait(&shared->not_full_reserved,
-                              &shared->reserved_mutex);
+                &shared->reserved_mutex);
+
             // Re-check limit after waking
             total_produced = shared->spot_produced + shared->market_produced;
             if (total_produced >= shared->production_limit) {
@@ -46,21 +48,7 @@ void* cryptoSLorMS_prod(void* arg) {
             }
         }
 
-        //  If MarketSwap: also wait if SWAP limit reached (max 10) 
-        if (myType == MarketSwap) {
-            while (shared->market_in_queue >= MAX_MARKET_SWAP) {
-                pthread_cond_wait(&shared->not_full_market_swap,
-                                  &shared->reserved_mutex);
-                // Re-check limit after waking
-                total_produced = shared->spot_produced + shared->market_produced;
-                if (total_produced >= shared->production_limit) {
-                    pthread_mutex_unlock(&shared->reserved_mutex);
-                    return NULL;
-                }
-            }
-        }
-
-        //  Add order to queue 
+        // Add order to queue 
         Order newOrder;
         newOrder.type = myType;
         shared->reservedQueue.push(newOrder);
@@ -88,13 +76,13 @@ void* cryptoSLorMS_prod(void* arg) {
         orderAdded.inQueue  = inQueue;
         orderAdded.produced = produced;
 
-        // --- Log INSIDE critical section per assignment requirement ---
+        // Log INSIDE critical section per assignment requirement 
         log_added_order(orderAdded);
 
-        // --- Signal consumers that queue is no longer empty ---
+        // Signal consumers that queue is no longer empty
         pthread_cond_signal(&shared->not_empty_reserved);
 
-        // --- Exit critical section ---
+        // Exit critical section 
         pthread_mutex_unlock(&shared->reserved_mutex);
     }
 
